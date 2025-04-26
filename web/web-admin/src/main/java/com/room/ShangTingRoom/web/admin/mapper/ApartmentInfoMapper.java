@@ -3,8 +3,12 @@ package com.room.ShangTingRoom.web.admin.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.room.ShangTingRoom.model.entity.ApartmentInfo;
+import com.room.ShangTingRoom.model.enums.ItemType;
 import com.room.ShangTingRoom.web.admin.vo.apartment.ApartmentItemVo;
 import com.room.ShangTingRoom.web.admin.vo.apartment.ApartmentQueryVo;
+import com.room.ShangTingRoom.web.admin.vo.graph.GraphVo;
+
+import java.util.List;
 
 /**
 * @author crescent
@@ -14,6 +18,8 @@ import com.room.ShangTingRoom.web.admin.vo.apartment.ApartmentQueryVo;
 */
 public interface ApartmentInfoMapper extends BaseMapper<ApartmentInfo> {
     IPage<ApartmentItemVo> pageApartmentItemByQuery(IPage<ApartmentItemVo> page, ApartmentQueryVo queryVo);
+    List<GraphVo> selectListByItemTypeAndId(ItemType itemType, Long itemId);
+
 }
 
 

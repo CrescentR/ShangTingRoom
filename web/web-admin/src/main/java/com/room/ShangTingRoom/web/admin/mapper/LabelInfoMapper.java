@@ -1,8 +1,7 @@
 package com.room.ShangTingRoom.web.admin.mapper;
 
-import com.room.ShangTingRoom.model.entity.LabelInfo;
-import com.room.ShangTingRoom.model.enums.ItemType;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.room.ShangTingRoom.model.entity.LabelInfo;
 
 import java.util.List;
 
@@ -13,7 +12,7 @@ import java.util.List;
 * @Entity com.room.ShangTingRoom.model.LabelInfo
 */
 public interface LabelInfoMapper extends BaseMapper<LabelInfo> {
-
+    List<LabelInfo> selectListByApartmentId(Long id);
 }
 
 

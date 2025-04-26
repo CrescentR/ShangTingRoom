@@ -14,6 +14,7 @@ import java.util.List;
 * @Entity com.room.ShangTingRoom.model.GraphInfo
 */
 public interface GraphInfoMapper extends BaseMapper<GraphInfo> {
+    List<GraphVo> selectListByItemTypeAndId(ItemType itemType, Long itemId);
 
 }
 

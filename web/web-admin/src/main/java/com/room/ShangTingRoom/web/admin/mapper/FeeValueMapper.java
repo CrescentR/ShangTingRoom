@@ -13,7 +13,7 @@ import java.util.List;
 * @Entity com.room.ShangTingRoom.model.FeeValue
 */
 public interface FeeValueMapper extends BaseMapper<FeeValue> {
-
+    List<FeeValueVo> selectListByApartmentId(Long id);
 }
 
 

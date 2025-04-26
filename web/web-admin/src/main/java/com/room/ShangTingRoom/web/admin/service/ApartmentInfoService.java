@@ -3,6 +3,7 @@ package com.room.ShangTingRoom.web.admin.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.room.ShangTingRoom.model.entity.ApartmentInfo;
+import com.room.ShangTingRoom.web.admin.vo.apartment.ApartmentDetailVo;
 import com.room.ShangTingRoom.web.admin.vo.apartment.ApartmentItemVo;
 import com.room.ShangTingRoom.web.admin.vo.apartment.ApartmentQueryVo;
 import com.room.ShangTingRoom.web.admin.vo.apartment.ApartmentSubmitVo;
@@ -15,4 +16,5 @@ import com.room.ShangTingRoom.web.admin.vo.apartment.ApartmentSubmitVo;
 public interface ApartmentInfoService extends IService<ApartmentInfo> {
     void saveOrUpdateApartment(ApartmentSubmitVo apartmentSubmitVo);
     IPage<ApartmentItemVo> pageItem(IPage<ApartmentItemVo> page, ApartmentQueryVo queryVo);
+    ApartmentDetailVo getApartmentDetailById(Long id);
 }

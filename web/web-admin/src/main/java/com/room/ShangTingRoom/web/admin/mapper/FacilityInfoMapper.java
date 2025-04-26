@@ -12,7 +12,7 @@ import java.util.List;
 * @Entity com.room.ShangTingRoom.model.FacilityInfo
 */
 public interface FacilityInfoMapper extends BaseMapper<FacilityInfo> {
-
+    List<FacilityInfo> selectListByApartmentId(Long id);
 }
 
 

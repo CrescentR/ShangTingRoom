@@ -5,12 +5,15 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.room.ShangTingRoom.model.entity.*;
 import com.room.ShangTingRoom.model.enums.ItemType;
-import com.room.ShangTingRoom.web.admin.mapper.ApartmentInfoMapper;
+import com.room.ShangTingRoom.web.admin.mapper.*;
 import com.room.ShangTingRoom.web.admin.service.*;
+import com.room.ShangTingRoom.web.admin.vo.apartment.ApartmentDetailVo;
 import com.room.ShangTingRoom.web.admin.vo.apartment.ApartmentItemVo;
 import com.room.ShangTingRoom.web.admin.vo.apartment.ApartmentQueryVo;
 import com.room.ShangTingRoom.web.admin.vo.apartment.ApartmentSubmitVo;
+import com.room.ShangTingRoom.web.admin.vo.fee.FeeValueVo;
 import com.room.ShangTingRoom.web.admin.vo.graph.GraphVo;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -32,17 +35,29 @@ public class ApartmentInfoServiceImpl extends ServiceImpl<ApartmentInfoMapper, A
     private final ApartmentFacilityService apartmentFacilityService;
     private final ApartmentLabelService apartmentLabelService;
     private final ApartmentInfoMapper apartmentInfoMapper;
+    private final LabelInfoMapper labelInfoMapper;
+    private final GraphInfoMapper graphInfoMapper;
+    private final FeeValueMapper feeValueMapper;
+    private final FacilityInfoMapper facilityInfoMapper;
     @Autowired
     public ApartmentInfoServiceImpl(GraphInfoService graphInfoService,
                                     ApartmentFeeValueService apartmentFeeValueService,
                                     ApartmentFacilityService apartmentFacilityService,
                                     ApartmentLabelService apartmentLabelService,
-                                    ApartmentInfoMapper apartmentInfoMapper) {
+                                    ApartmentInfoMapper apartmentInfoMapper,
+                                    LabelInfoMapper labelInfoMapper,
+                                    GraphInfoMapper graphInfoMapper,
+                                    FeeValueMapper feeValueMapper,
+                                    FacilityInfoMapper facilityInfoMapper) {
         this.graphInfoService = graphInfoService;
         this.apartmentFeeValueService = apartmentFeeValueService;
         this.apartmentFacilityService = apartmentFacilityService;
         this.apartmentLabelService = apartmentLabelService;
         this.apartmentInfoMapper = apartmentInfoMapper;
+        this.labelInfoMapper = labelInfoMapper;
+        this.graphInfoMapper = graphInfoMapper;
+        this.feeValueMapper = feeValueMapper;
+        this.facilityInfoMapper = facilityInfoMapper;
     }
     @Override
     public IPage<ApartmentItemVo> pageItem(IPage<ApartmentItemVo> page, ApartmentQueryVo queryVo) {
@@ -123,6 +138,24 @@ public class ApartmentInfoServiceImpl extends ServiceImpl<ApartmentInfoMapper, A
             apartmentFeeValueService.saveBatch(feeValueList);
 
         }
+    }
+    @Override
+    public ApartmentDetailVo getApartmentDetailById(Long id){
+        ApartmentInfo apartmentInfo = this.getById(id);
+        if (apartmentInfo == null) {
+            return null;
+        }
+        List<GraphVo> graphVoList = graphInfoMapper.selectListByItemTypeAndId(ItemType.APARTMENT,id);
+        List<LabelInfo> labelInfoList = labelInfoMapper.selectListByApartmentId(id);
+        List<FacilityInfo> facilityInfoList = facilityInfoMapper.selectListByApartmentId(id);
+        List<FeeValueVo> feeValueVoList = feeValueMapper.selectListByApartmentId(id);
+        ApartmentDetailVo adminApartmentDetailVo = new ApartmentDetailVo();
+        BeanUtils.copyProperties(apartmentInfo, adminApartmentDetailVo);
+        adminApartmentDetailVo.setGraphVoList(graphVoList);
+        adminApartmentDetailVo.setLabelInfoList(labelInfoList);
+        adminApartmentDetailVo.setFacilityInfoList(facilityInfoList);
+        adminApartmentDetailVo.setFeeValueVoList(feeValueVoList);
+        return adminApartmentDetailVo;
     }
 }
 
