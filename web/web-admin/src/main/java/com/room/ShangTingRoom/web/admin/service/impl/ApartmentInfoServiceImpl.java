@@ -1,0 +1,131 @@
+package com.room.ShangTingRoom.web.admin.service.impl;
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.room.ShangTingRoom.model.entity.*;
+import com.room.ShangTingRoom.model.enums.ItemType;
+import com.room.ShangTingRoom.web.admin.mapper.ApartmentInfoMapper;
+import com.room.ShangTingRoom.web.admin.service.*;
+import com.room.ShangTingRoom.web.admin.vo.apartment.ApartmentItemVo;
+import com.room.ShangTingRoom.web.admin.vo.apartment.ApartmentQueryVo;
+import com.room.ShangTingRoom.web.admin.vo.apartment.ApartmentSubmitVo;
+import com.room.ShangTingRoom.web.admin.vo.graph.GraphVo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * @author crescent
+ * @description 针对表【apartment_info(公寓信息表)】的数据库操作Service实现
+ * @createDate 2023-07-24 15:48:00
+ */
+@Service
+public class ApartmentInfoServiceImpl extends ServiceImpl<ApartmentInfoMapper, ApartmentInfo>
+        implements ApartmentInfoService {
+
+    private final GraphInfoService graphInfoService;
+    private final ApartmentFeeValueService apartmentFeeValueService;
+    private final ApartmentFacilityService apartmentFacilityService;
+    private final ApartmentLabelService apartmentLabelService;
+    private final ApartmentInfoMapper apartmentInfoMapper;
+    @Autowired
+    public ApartmentInfoServiceImpl(GraphInfoService graphInfoService,
+                                    ApartmentFeeValueService apartmentFeeValueService,
+                                    ApartmentFacilityService apartmentFacilityService,
+                                    ApartmentLabelService apartmentLabelService,
+                                    ApartmentInfoMapper apartmentInfoMapper) {
+        this.graphInfoService = graphInfoService;
+        this.apartmentFeeValueService = apartmentFeeValueService;
+        this.apartmentFacilityService = apartmentFacilityService;
+        this.apartmentLabelService = apartmentLabelService;
+        this.apartmentInfoMapper = apartmentInfoMapper;
+    }
+    @Override
+    public IPage<ApartmentItemVo> pageItem(IPage<ApartmentItemVo> page, ApartmentQueryVo queryVo) {
+
+        return apartmentInfoMapper.pageApartmentItemByQuery(page, queryVo);
+    }
+    @Override
+    public void saveOrUpdateApartment(ApartmentSubmitVo apartmentSubmitVo) {
+        boolean isUpdate = apartmentSubmitVo.getId() != null;
+        super.saveOrUpdate(apartmentSubmitVo);
+        if (isUpdate) {
+            //删除图片列表
+            LambdaQueryWrapper<GraphInfo> graphQueryWrapper=new LambdaQueryWrapper<>();
+            graphQueryWrapper.eq(GraphInfo::getItemType, ItemType.APARTMENT);
+            graphQueryWrapper.eq(GraphInfo::getItemId, apartmentSubmitVo.getId());
+            graphInfoService.remove(graphQueryWrapper);
+            //删除配套设施
+            LambdaQueryWrapper<ApartmentFacility> facilityQueryWrapper=new LambdaQueryWrapper<>();
+            facilityQueryWrapper.eq(ApartmentFacility::getApartmentId, apartmentSubmitVo.getId());
+            apartmentFacilityService.remove(facilityQueryWrapper);
+            //删除标签
+            LambdaQueryWrapper<ApartmentLabel> labelQueryWrapper=new LambdaQueryWrapper<>();
+            labelQueryWrapper.eq(ApartmentLabel::getApartmentId, apartmentSubmitVo.getId());
+            apartmentLabelService.remove(labelQueryWrapper);
+            //删除杂费
+            LambdaQueryWrapper<ApartmentFeeValue> feeValueQueryWrapper=new LambdaQueryWrapper<>();
+            feeValueQueryWrapper.eq(ApartmentFeeValue::getApartmentId,apartmentSubmitVo.getId());
+            apartmentFeeValueService.remove(feeValueQueryWrapper);
+        }
+        //插入图片列表
+        List<GraphVo> graphVoList = apartmentSubmitVo.getGraphVoList();
+        if(!CollectionUtils.isEmpty(graphVoList)){
+            ArrayList<GraphInfo> graphInfoList = new ArrayList<>();
+            for (GraphVo graphVo : graphVoList) {
+                GraphInfo graphInfo = new GraphInfo();
+                graphInfo.setItemId(apartmentSubmitVo.getId());
+                graphInfo.setItemType(ItemType.APARTMENT);
+                graphInfo.setName(graphVo.getName());
+                graphInfo.setUrl(graphVo.getUrl());
+                graphInfoList.add(graphInfo);
+            }
+            graphInfoService.saveBatch(graphInfoList);
+        }
+        //插入配套列表
+        List<Long> facilityInfoIdList =apartmentSubmitVo.getFacilityInfoIds();
+        if(!CollectionUtils.isEmpty(facilityInfoIdList)){
+            ArrayList<ApartmentFacility> facilityList = new ArrayList<>();
+            for (Long facilityInfoId : facilityInfoIdList) {
+                ApartmentFacility apartmentFacility = new ApartmentFacility();
+                apartmentFacility.setApartmentId(apartmentSubmitVo.getId());
+                apartmentFacility.setFacilityId(facilityInfoId);
+                facilityList.add(apartmentFacility);
+            }
+            apartmentFacilityService.saveBatch(facilityList);
+        }
+        //插入标签列表
+        List<Long> labelIdsList=apartmentSubmitVo.getLabelIds();
+        if(!CollectionUtils.isEmpty(labelIdsList)){
+            ArrayList<ApartmentLabel> labelList = new ArrayList<>();
+            for (Long labelId : labelIdsList) {
+                ApartmentLabel apartmentLabel = new ApartmentLabel();
+                apartmentLabel.setApartmentId(apartmentSubmitVo.getId());
+                apartmentLabel.setLabelId(labelId);
+                labelList.add(apartmentLabel);
+            }
+            apartmentLabelService.saveBatch(labelList);
+        }
+        //插入杂费列表
+        List<Long> feeValueIdsList=apartmentSubmitVo.getFeeValueIds();
+        if (!CollectionUtils.isEmpty(feeValueIdsList)){
+            ArrayList<ApartmentFeeValue> feeValueList=new ArrayList<>();
+            for(Long feeValueId : feeValueIdsList){
+                ApartmentFeeValue apartmentFeeValue = new ApartmentFeeValue();
+                apartmentFeeValue.setApartmentId(apartmentSubmitVo.getId());
+                apartmentFeeValue.setFeeValueId(feeValueId);
+                feeValueList.add(apartmentFeeValue);
+            }
+            apartmentFeeValueService.saveBatch(feeValueList);
+
+        }
+    }
+}
+
+
+
+
