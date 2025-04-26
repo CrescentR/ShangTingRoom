@@ -6,11 +6,11 @@ import com.room.ShangTingRoom.web.admin.service.FileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
-import java.util.Map;
 
 
 @Tag(name = "文件管理")
@@ -30,17 +30,4 @@ public class FileUploadController {
         return Result.ok(url);
     }
 
-    @Operation(summary = "删除文件")
-    @DeleteMapping("delete")
-    public Result<Boolean> delete(@RequestParam String objectName) {
-        boolean result = fileService.delete(objectName);
-        return Result.ok(result);
-    }
-
-    @Operation(summary = "获取文件列表")
-    @GetMapping("list")
-    public Result<List<Map<String, Object>>> listFiles(@RequestParam(defaultValue = "") String prefix) {
-        List<Map<String, Object>> fileList = fileService.listFiles(prefix);
-        return Result.ok(fileList);
-    }
 }
