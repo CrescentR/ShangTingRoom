@@ -3,5 +3,5 @@ package com.room.ShangTingRoom.web.admin.service;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface FileService {
-    String upload(MultipartFile file) throws Exception;
+    String upload(MultipartFile file);
 }
