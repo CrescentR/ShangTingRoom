@@ -3,7 +3,9 @@ package com.room.ShangTingRoom.web.admin.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.room.ShangTingRoom.common.exception.LeaseException;
 import com.room.ShangTingRoom.model.entity.*;
+import com.room.ShangTingRoom.common.result.ResultCodeEnum;
 import com.room.ShangTingRoom.model.enums.ItemType;
 import com.room.ShangTingRoom.web.admin.mapper.*;
 import com.room.ShangTingRoom.web.admin.service.*;
@@ -39,6 +41,7 @@ public class ApartmentInfoServiceImpl extends ServiceImpl<ApartmentInfoMapper, A
     private final GraphInfoMapper graphInfoMapper;
     private final FeeValueMapper feeValueMapper;
     private final FacilityInfoMapper facilityInfoMapper;
+    private final RoomInfoMapper roomInfoMapper;
     @Autowired
     public ApartmentInfoServiceImpl(GraphInfoService graphInfoService,
                                     ApartmentFeeValueService apartmentFeeValueService,
@@ -48,7 +51,8 @@ public class ApartmentInfoServiceImpl extends ServiceImpl<ApartmentInfoMapper, A
                                     LabelInfoMapper labelInfoMapper,
                                     GraphInfoMapper graphInfoMapper,
                                     FeeValueMapper feeValueMapper,
-                                    FacilityInfoMapper facilityInfoMapper) {
+                                    FacilityInfoMapper facilityInfoMapper,
+                                    RoomInfoMapper roomInfoMapper) {
         this.graphInfoService = graphInfoService;
         this.apartmentFeeValueService = apartmentFeeValueService;
         this.apartmentFacilityService = apartmentFacilityService;
@@ -58,6 +62,7 @@ public class ApartmentInfoServiceImpl extends ServiceImpl<ApartmentInfoMapper, A
         this.graphInfoMapper = graphInfoMapper;
         this.feeValueMapper = feeValueMapper;
         this.facilityInfoMapper = facilityInfoMapper;
+        this.roomInfoMapper= roomInfoMapper;
     }
     @Override
     public IPage<ApartmentItemVo> pageItem(IPage<ApartmentItemVo> page, ApartmentQueryVo queryVo) {
@@ -156,6 +161,32 @@ public class ApartmentInfoServiceImpl extends ServiceImpl<ApartmentInfoMapper, A
         adminApartmentDetailVo.setFacilityInfoList(facilityInfoList);
         adminApartmentDetailVo.setFeeValueVoList(feeValueVoList);
         return adminApartmentDetailVo;
+    }
+    @Override
+    public void removeApartmentById(Long id){
+        LambdaQueryWrapper<RoomInfo> roomQueryWrapper= new LambdaQueryWrapper<>();
+        roomQueryWrapper.eq(RoomInfo::getApartmentId,id);
+        Long count = roomInfoMapper.selectCount(roomQueryWrapper);
+        if (count > 0){
+            throw new LeaseException(ResultCodeEnum.ADMIN_APARTMENT_DELETE_ERROR);
+        }
+        //删除GraphInfo图片
+        LambdaQueryWrapper<GraphInfo> graphQueryWrapper= new LambdaQueryWrapper<>();
+        graphQueryWrapper.eq(GraphInfo::getItemType,ItemType.APARTMENT);
+        graphQueryWrapper.eq(GraphInfo::getItemId,id);
+        graphInfoService.remove(graphQueryWrapper);
+        //删除标签
+        LambdaQueryWrapper<ApartmentLabel> labelQueryWrapper=new LambdaQueryWrapper<>();
+        labelQueryWrapper.eq(ApartmentLabel::getApartmentId,id);
+        apartmentLabelService.remove(labelQueryWrapper);
+        //删除配套设施
+        LambdaQueryWrapper<ApartmentFacility> facilityQueryWrapper=new LambdaQueryWrapper<>();
+        facilityQueryWrapper.eq(ApartmentFacility::getApartmentId,id);
+        apartmentFacilityService.remove(facilityQueryWrapper);
+        //删除杂费
+        LambdaQueryWrapper<ApartmentFeeValue> FeeQueryWrapper=new LambdaQueryWrapper<>();
+        FeeQueryWrapper.eq(ApartmentFeeValue::getApartmentId,id);
+        apartmentFeeValueService.remove(FeeQueryWrapper);
     }
 }
 
