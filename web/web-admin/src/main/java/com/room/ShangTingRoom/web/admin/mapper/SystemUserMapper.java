@@ -13,7 +13,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 * @Entity com.room.ShangTingRoom.model.SystemUser
 */
 public interface SystemUserMapper extends BaseMapper<SystemUser> {
-
+    IPage<SystemUserItemVo> pageSystemUserByQuery(IPage<SystemUser> page, SystemUserQueryVo queryVo);
 }
 
 

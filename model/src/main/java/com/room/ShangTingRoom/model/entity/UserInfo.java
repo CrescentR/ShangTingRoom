@@ -1,10 +1,10 @@
 package com.room.ShangTingRoom.model.entity;
 
-import com.room.ShangTingRoom.model.enums.BaseStatus;
-import io.swagger.v3.oas.annotations.media.Schema;
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
-
+import com.room.ShangTingRoom.model.enums.BaseStatus;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Schema(description = "用户信息表")
@@ -19,7 +19,7 @@ public class UserInfo extends BaseEntity {
     private String phone;
 
     @Schema(description = "密码")
-    @TableField(value = "password", select = false)
+    @TableField(value = "password", select = false,updateStrategy = FieldStrategy.NOT_EMPTY)
     private String password;
 
     @Schema(description = "头像url")
