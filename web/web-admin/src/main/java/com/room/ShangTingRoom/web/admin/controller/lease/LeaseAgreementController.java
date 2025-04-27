@@ -1,6 +1,7 @@
 package com.room.ShangTingRoom.web.admin.controller.lease;
 
 
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.room.ShangTingRoom.common.result.Result;
@@ -47,18 +48,23 @@ public class LeaseAgreementController {
     @GetMapping(name = "getById")
     public Result<AgreementVo> getById(@RequestParam Long id) {
         AgreementVo apartment=leaseAgreementService.getAgreementById(id);
-        return Result.ok();
+        return Result.ok(apartment);
     }
 
     @Operation(summary = "根据id删除租约信息")
     @DeleteMapping("removeById")
     public Result<Void> removeById(@RequestParam Long id) {
+        leaseAgreementService.removeById(id);
         return Result.ok();
     }
 
     @Operation(summary = "根据id更新租约状态")
     @PostMapping("updateStatusById")
     public Result<Void> updateStatusById(@RequestParam Long id, @RequestParam LeaseStatus status) {
+        LambdaUpdateWrapper<LeaseAgreement> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(LeaseAgreement::getId,id);
+        updateWrapper.set(LeaseAgreement::getStatus,status);
+        leaseAgreementService.update(updateWrapper);
         return Result.ok();
     }
 
