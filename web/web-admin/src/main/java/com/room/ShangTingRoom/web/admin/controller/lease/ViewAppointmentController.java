@@ -1,9 +1,11 @@
 package com.room.ShangTingRoom.web.admin.controller.lease;
 
 
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.room.ShangTingRoom.common.result.Result;
+import com.room.ShangTingRoom.model.entity.ViewAppointment;
 import com.room.ShangTingRoom.model.enums.AppointmentStatus;
 import com.room.ShangTingRoom.web.admin.service.ViewAppointmentService;
 import com.room.ShangTingRoom.web.admin.vo.appointment.AppointmentQueryVo;
@@ -34,6 +36,10 @@ public class ViewAppointmentController {
     @Operation(summary = "根据id更新预约状态")
     @PostMapping("updateStatusById")
     public Result updateStatusById(@RequestParam Long id, @RequestParam AppointmentStatus status) {
+        LambdaUpdateWrapper<ViewAppointment> updateWrapper=new LambdaUpdateWrapper<>();
+        updateWrapper.eq(ViewAppointment::getId,id);
+        updateWrapper.set(ViewAppointment::getAppointmentStatus,status);
+        viewAppointmentService.update(updateWrapper);
         return Result.ok();
     }
 

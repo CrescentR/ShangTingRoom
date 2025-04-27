@@ -13,6 +13,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 * @Entity com.room.ShangTingRoom.model.LeaseAgreement
 */
 public interface LeaseAgreementMapper extends BaseMapper<LeaseAgreement> {
+    IPage<AgreementVo> pageAgreementByQuery(IPage<AgreementVo> page, AgreementQueryVo queryVo);
 
 }
 
