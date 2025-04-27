@@ -13,7 +13,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 * @Entity com.room.ShangTingRoom.model.ViewAppointment
 */
 public interface ViewAppointmentMapper extends BaseMapper<ViewAppointment> {
-
+    IPage<AppointmentVo> pageAppointmentByQuery(IPage<AppointmentVo> page, AppointmentQueryVo queryVo);
 }
 
 
