@@ -12,7 +12,7 @@ import java.util.List;
  * @Entity com.room.ShangTingRoom.model.PaymentType
  */
 public interface PaymentTypeMapper extends BaseMapper<PaymentType> {
-
+    List<PaymentType> selectListByRoomId(Long id);
 }
 
 

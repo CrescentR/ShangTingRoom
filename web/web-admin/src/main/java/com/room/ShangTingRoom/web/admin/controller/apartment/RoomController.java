@@ -2,6 +2,7 @@ package com.room.ShangTingRoom.web.admin.controller.apartment;
 
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.room.ShangTingRoom.common.result.Result;
 import com.room.ShangTingRoom.model.entity.RoomInfo;
 import com.room.ShangTingRoom.model.enums.ReleaseStatus;
@@ -36,12 +37,15 @@ public class RoomController {
     @Operation(summary = "根据条件分页查询房间列表")
     @GetMapping("pageItem")
     public Result<IPage<RoomItemVo>> pageItem(@RequestParam long current, @RequestParam long size, RoomQueryVo queryVo) {
-        return Result.ok();
+        IPage<RoomItemVo> page = new Page<>(current, size);
+        IPage<RoomItemVo> result = roomInfoService.pageRoomItemByQuery(page, queryVo);
+        return Result.ok(result);
     }
 
     @Operation(summary = "根据id获取房间详细信息")
     @GetMapping("getDetailById")
     public Result<RoomDetailVo> getDetailById(@RequestParam Long id) {
+        RoomDetailVo roomInfo= roomInfoService.getRoomDetailById(id);
         return Result.ok();
     }
 

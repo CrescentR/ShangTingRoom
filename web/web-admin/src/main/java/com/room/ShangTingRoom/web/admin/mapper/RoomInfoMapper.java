@@ -13,7 +13,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 * @Entity com.room.ShangTingRoom.model.RoomInfo
 */
 public interface RoomInfoMapper extends BaseMapper<RoomInfo> {
-
+    IPage<RoomItemVo> pageRoomItemByQuery(IPage<RoomItemVo> page, RoomQueryVo queryVo);
 }
 
 

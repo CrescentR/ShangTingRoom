@@ -1,8 +1,8 @@
 package com.room.ShangTingRoom.web.admin.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.room.ShangTingRoom.model.entity.AttrValue;
 import com.room.ShangTingRoom.web.admin.vo.attr.AttrValueVo;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 import java.util.List;
 
@@ -13,7 +13,7 @@ import java.util.List;
 * @Entity com.room.ShangTingRoom.model.AttrValue
 */
 public interface AttrValueMapper extends BaseMapper<AttrValue> {
-
+    List<AttrValueVo> selectListByRoomId(Long id);
 }
 
 
