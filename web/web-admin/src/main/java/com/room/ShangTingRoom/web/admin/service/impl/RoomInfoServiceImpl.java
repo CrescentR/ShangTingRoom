@@ -1,10 +1,20 @@
 package com.room.ShangTingRoom.web.admin.service.impl;
 
-import com.room.ShangTingRoom.model.entity.RoomInfo;
-import com.room.ShangTingRoom.web.admin.mapper.RoomInfoMapper;
-import com.room.ShangTingRoom.web.admin.service.RoomInfoService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.room.ShangTingRoom.model.entity.*;
+import com.room.ShangTingRoom.model.enums.ItemType;
+import com.room.ShangTingRoom.web.admin.mapper.RoomInfoMapper;
+import com.room.ShangTingRoom.web.admin.service.*;
+import com.room.ShangTingRoom.web.admin.vo.graph.GraphVo;
+import com.room.ShangTingRoom.web.admin.vo.room.RoomSubmitVo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author crescent
@@ -14,6 +24,127 @@ import org.springframework.stereotype.Service;
 @Service
 public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
         implements RoomInfoService {
+    private final GraphInfoService graphInfoService;
+    private final RoomAttrValueService roomAttrValueService;
+    private final RoomFacilityService roomFacilityService;
+    private final RoomLabelService roomLabelService;
+    private final RoomPaymentTypeService roomPaymentTypeService;
+    private final RoomLeaseTermService roomLeaseTermService;
+
+    @Autowired
+    public RoomInfoServiceImpl(@Qualifier("graphInfoService") GraphInfoService graphInfoService,
+                               @Qualifier("roomAttrValueService") RoomAttrValueService roomAttrValueService,
+                               @Qualifier("roomFacilityService") RoomFacilityService roomFacilityService,
+                               @Qualifier("roomLabelService") RoomLabelService roomLabelService,
+                               @Qualifier("roomPaymentTypeService")RoomPaymentTypeService roomPaymentTypeService, @Qualifier("roomLeaseTermService") RoomLeaseTermService roomLeaseTermService) {
+        this.graphInfoService = graphInfoService;
+        this.roomAttrValueService = roomAttrValueService;
+        this.roomFacilityService = roomFacilityService;
+        this.roomLabelService = roomLabelService;
+        this.roomPaymentTypeService = roomPaymentTypeService;
+        this.roomLeaseTermService = roomLeaseTermService;
+    }
+    @Override
+    public void saveOrUpdateRoom(RoomSubmitVo roomSubmitVo){
+        boolean isUpdate = roomSubmitVo.getId() !=  null;
+        super.saveOrUpdate(roomSubmitVo);
+        if(isUpdate){
+            //删除原有的graphInfoList
+            LambdaQueryWrapper<GraphInfo> graphQueryWrapper=new LambdaQueryWrapper<>();
+            graphQueryWrapper.eq(GraphInfo::getItemType, ItemType.ROOM);
+            graphQueryWrapper.eq(GraphInfo::getItemId, roomSubmitVo.getId());
+            graphInfoService.remove(graphQueryWrapper);
+            //删除原来有的roomAttrValueList
+            LambdaQueryWrapper<RoomAttrValue> attrQueryMapper =new LambdaQueryWrapper<>();
+            attrQueryMapper.eq(RoomAttrValue::getRoomId, roomSubmitVo.getId());
+            roomAttrValueService.remove(attrQueryMapper);
+            //删除原有的配套信息
+            LambdaQueryWrapper<RoomFacility>  facilityQueryWrapper=new LambdaQueryWrapper<>();
+            facilityQueryWrapper.eq(RoomFacility::getRoomId, roomSubmitVo.getId());
+            roomFacilityService.remove(facilityQueryWrapper);
+            //删除标签信息
+            LambdaQueryWrapper<RoomLabel> labelQueryWrapper= new LambdaQueryWrapper<>();
+            labelQueryWrapper.eq(RoomLabel::getRoomId,roomSubmitVo.getId());
+            roomLabelService.remove(labelQueryWrapper);
+            //删除原有支付方式
+            LambdaQueryWrapper<RoomPaymentType> paymentTypeQueryWrapper=new LambdaQueryWrapper<>();
+            paymentTypeQueryWrapper.eq(RoomPaymentType::getRoomId,roomSubmitVo.getId());
+            roomPaymentTypeService.remove(paymentTypeQueryWrapper);
+            //删除原有续期信息
+            LambdaQueryWrapper<RoomLeaseTerm> leaseTermQueryWrapper=new LambdaQueryWrapper<>();
+            leaseTermQueryWrapper.eq(RoomLeaseTerm::getRoomId,roomSubmitVo.getId());
+            roomLeaseTermService.remove(leaseTermQueryWrapper);
+
+            //下面保存新的信息
+            //保存新的图片
+            List<GraphVo> graphVoList = roomSubmitVo.getGraphVoList();
+            if (!CollectionUtils.isEmpty(graphVoList)) {
+                ArrayList<GraphInfo> graphInfoList = new ArrayList<>();
+                for (GraphVo graphVo : graphVoList) {
+                    GraphInfo graphInfo = new GraphInfo();
+                    graphInfo.setItemId(roomSubmitVo.getId());
+                    graphInfo.setItemType(ItemType.ROOM);
+                    graphInfo.setUrl(graphVo.getUrl());
+                    graphInfoList.add(graphInfo);
+                }
+                graphInfoService.saveBatch(graphInfoList);
+            }
+            //2.保存新的roomAttrValueList
+            List<Long> attrValueIds = roomSubmitVo.getAttrValueIds();
+            if (!CollectionUtils.isEmpty(attrValueIds)) {
+                List<RoomAttrValue> roomAttrValueList = new ArrayList<>();
+                for (Long attrValueId : attrValueIds) {
+                    RoomAttrValue roomAttrValue = RoomAttrValue.builder().roomId(roomSubmitVo.getId()).attrValueId(attrValueId).build();
+                    roomAttrValueList.add(roomAttrValue);
+                }
+                roomAttrValueService.saveBatch(roomAttrValueList);
+            }
+
+            //3.保存新的facilityInfoList
+            List<Long> facilityInfoIds = roomSubmitVo.getFacilityInfoIds();
+            if (!CollectionUtils.isEmpty(facilityInfoIds)) {
+                List<RoomFacility> roomFacilityList = new ArrayList<>();
+                for (Long facilityInfoId : facilityInfoIds) {
+                    RoomFacility roomFacility = RoomFacility.builder().roomId(roomSubmitVo.getId()).facilityId(facilityInfoId).build();
+                    roomFacilityList.add(roomFacility);
+                }
+                roomFacilityService.saveBatch(roomFacilityList);
+            }
+
+            //4.保存新的labelInfoList
+            List<Long> labelInfoIds = roomSubmitVo.getLabelInfoIds();
+            if (!CollectionUtils.isEmpty(labelInfoIds)) {
+                ArrayList<RoomLabel> roomLabelList = new ArrayList<>();
+                for (Long labelInfoId : labelInfoIds) {
+                    RoomLabel roomLabel = RoomLabel.builder().roomId(roomSubmitVo.getId()).labelId(labelInfoId).build();
+                    roomLabelList.add(roomLabel);
+                }
+                roomLabelService.saveBatch(roomLabelList);
+            }
+
+            //5.保存新的paymentTypeList
+            List<Long> paymentTypeIds = roomSubmitVo.getPaymentTypeIds();
+            if (!CollectionUtils.isEmpty(paymentTypeIds)) {
+                ArrayList<RoomPaymentType> roomPaymentTypeList = new ArrayList<>();
+                for (Long paymentTypeId : paymentTypeIds) {
+                    RoomPaymentType roomPaymentType = RoomPaymentType.builder().roomId(roomSubmitVo.getId()).paymentTypeId(paymentTypeId).build();
+                    roomPaymentTypeList.add(roomPaymentType);
+                }
+                roomPaymentTypeService.saveBatch(roomPaymentTypeList);
+            }
+
+            //6.保存新的leaseTermList
+            List<Long> leaseTermIds = roomSubmitVo.getLeaseTermIds();
+            if (!CollectionUtils.isEmpty(leaseTermIds)) {
+                ArrayList<RoomLeaseTerm> roomLeaseTerms = new ArrayList<>();
+                for (Long leaseTermId : leaseTermIds) {
+                    RoomLeaseTerm roomLeaseTerm = RoomLeaseTerm.builder().roomId(roomSubmitVo.getId()).leaseTermId(leaseTermId).build();
+                    roomLeaseTerms.add(roomLeaseTerm);
+                }
+                roomLeaseTermService.saveBatch(roomLeaseTerms);
+            }
+        }
+    }
 
 }
 
