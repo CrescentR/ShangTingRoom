@@ -31,7 +31,7 @@ public class LoginController {
     @PostMapping("login")
     public Result<String> login(@RequestBody LoginVo loginVo) {
         String token= loginService.login(loginVo);
-        return Result.ok();
+        return Result.ok(token);
     }
 
     @Operation(summary = "获取登陆用户个人信息")

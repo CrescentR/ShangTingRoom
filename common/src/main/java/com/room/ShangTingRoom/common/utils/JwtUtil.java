@@ -10,7 +10,8 @@ import java.util.Date;
 
 public class JwtUtil {
     private final static long tokenExpiration = 60 * 60 * 1000L;
-    private final static SecretKey tokenSignKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    private final static String SECRET_KEY = "shang_ting_room_jwt_secret_key_20240601_secure_string";
+    private final static SecretKey tokenSignKey = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
     public static String createToken(Long uerId,String username){
         String token = Jwts.builder()
                 .setSubject("USER_INFO")
