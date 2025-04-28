@@ -30,6 +30,7 @@ public class LoginController {
     @Operation(summary = "登录")
     @PostMapping("login")
     public Result<String> login(@RequestBody LoginVo loginVo) {
+        String token= loginService.login(loginVo);
         return Result.ok();
     }
 
